@@ -1,0 +1,7 @@
+C:\Work\Projects\BestFit\BestFit\bin\Debug\BestFit.exe.config
+C:\Work\Projects\BestFit\BestFit\bin\Debug\BestFit.exe
+C:\Work\Projects\BestFit\BestFit\bin\Debug\BestFit.pdb
+C:\Work\Projects\BestFit\BestFit\obj\Debug\BestFit.csprojAssemblyReference.cache
+C:\Work\Projects\BestFit\BestFit\obj\Debug\BestFit.csproj.CoreCompileInputs.cache
+C:\Work\Projects\BestFit\BestFit\obj\Debug\BestFit.exe
+C:\Work\Projects\BestFit\BestFit\obj\Debug\BestFit.pdb

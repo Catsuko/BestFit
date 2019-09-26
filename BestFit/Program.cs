@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace BestFit
 {
@@ -10,13 +12,15 @@ namespace BestFit
             while (true)
             {
                 Console.Clear();
-                double[] tileSize;
-                double[] floorSize;
+                double[] phoneSize;
+                double[] boxSize;
 
                 try
                 {
-                    tileSize = CaptureDimensions("Tile Size?");
-                    floorSize = CaptureDimensions("Floor Size?");
+                    phoneSize = CaptureDimensions("Phone Size?");
+                    boxSize = CaptureDimensions("Box Size?");
+                    if (phoneSize.Length != 3 || boxSize.Length != 3)
+                        throw new FormatException("Wrong Dimensions!");
                 }
                 catch (FormatException ex)
                 {
@@ -24,7 +28,7 @@ namespace BestFit
                     continue;
                 }
 
-                DisplayTilesPicked(tileSize, floorSize);
+                DisplayBestFits(phoneSize, boxSize);
             }
         }
 
@@ -34,25 +38,88 @@ namespace BestFit
             return Console.ReadLine().Replace(" ", "").Split('x').Select(str => double.Parse(str)).ToArray();
         }
 
+        private static void DisplayBestFits (double[] phone, double[] box)
+        {
+            Console.WriteLine();
+            var best = DisplayPickedForOrientations(phone, box);
+            foreach (var result in best)
+                Console.WriteLine(result.ToString());
+
+            Console.WriteLine($"TOTAL: {best.Sum(fr => fr.TotalPhones)}");
+            Console.ReadKey();
+        }
+
+        private static IEnumerable<FitResults> DisplayPickedForOrientations (double[] phone, double[] box)
+        {
+            var allResults = new List<IEnumerable<FitResults>>();
+            allResults.Add(DisplayAllPicked(new double[] { phone[0], phone[1], phone[2] }, box));
+            allResults.Add(DisplayAllPicked(new double[] { phone[0], phone[2], phone[1] }, box));
+            allResults.Add(DisplayAllPicked(new double[] { phone[1], phone[0], phone[2] }, box));
+            allResults.Add(DisplayAllPicked(new double[] { phone[1], phone[2], phone[0] }, box));
+            allResults.Add(DisplayAllPicked(new double[] { phone[2], phone[1], phone[0] }, box));
+            allResults.Add(DisplayAllPicked(new double[] { phone[2], phone[0], phone[1] }, box));
+            return allResults.OrderBy(r => r.Sum(fr => fr.TotalPhones)).Last();
+        }
+
+        private static IEnumerable<FitResults> DisplayAllPicked(double[] phone, double[] box)
+        {
+            var results = new List<FitResults>();
+            var phoneRect = new Rectangle(phone[1], phone[2]);
+            var boxRect = new Rectangle(box[0], box[1]);
+            var fitResults = new FitResults(phone, box, phoneRect.Fill(boxRect));
+            if(fitResults.TotalPhones > 0)
+            {
+                results.Add(fitResults);
+                results.AddRange(DisplayPickedForOrientations(phone, fitResults.RemainingSpace));
+            }
+
+            return results;
+        }
+
         private static void DisplayInvalidFormatMessage ()
         {
             Console.WriteLine();
             Console.WriteLine("Invalid Input!");
-            Console.WriteLine("Please enter the size in the following format: [WIDTH] x [LENGTH]");
-            Console.WriteLine("For example, to make a Rectangle of Width 2 and Lenght 4, enter the following:");
-            Console.WriteLine("2x4 or 2 x 4");
+            Console.WriteLine("Please enter the size in the following format: [WIDTH] x [LENGTH] x [DEPTH]");
+            Console.WriteLine("For example, to make a Rectangular Prism of Width 2, Lenght 4 and Depth 1, enter the following:");
+            Console.WriteLine("2x4x1 or 2 x 4 x 1");
             Console.ReadKey();
         }
 
-        private static void DisplayTilesPicked (double[] tileSize, double[] floorSize)
+        public class FitResults
         {
-            Rectangle tile = new Rectangle(tileSize[0], tileSize[1]);
-            Rectangle container = new Rectangle(floorSize[0], floorSize[1]);
-            Console.WriteLine($"{tile} best fills {container} with the following:");
-            var fillGrouping = tile.Fill(container).GroupBy((rect) => rect);
-            foreach (var group in fillGrouping)
-                Console.WriteLine($"{group.Count()} x {group.Key}");
-            Console.ReadKey();
+            private readonly double[] _phone, _space;
+            private readonly IEnumerable<Rectangle> _results;
+
+            public int TotalPhones { get { return LayerCount * PhonesInLayer; } }
+            public int PhonesInLayer { get { return _results.Count(); } }
+            public int LayerCount { get { return (int)Math.Floor(_space[2] / _phone[0]); } }
+            public double[] RemainingSpace { get { return new double[] { _space[0], _space[1], _space[2] - (LayerCount * _phone[0]) }; } }
+
+            public FitResults(double[] phone, double[] space, IEnumerable<Rectangle> results)
+            {
+                _phone = phone;
+                _space = space;
+                _results = results;
+            }
+
+            public override string ToString()
+            {
+                var sb = new StringBuilder();
+                var remainingSpace = RemainingSpace;
+                sb.AppendLine($"{_phone[0]}x{_phone[1]}x{_phone[2]} => {_space[0]}x{_space[1]}x{_space[2]}");
+                sb.AppendLine($"Fitted with {LayerCount} layers of {PhonesInLayer}");
+                sb.AppendLine();
+                sb.AppendLine("Chosen Arrangements:");
+                var fillGrouping = _results.GroupBy((rect) => rect);
+                foreach (var group in fillGrouping)
+                    sb.AppendLine($"     {group.Count()} x {group.Key}");
+                sb.AppendLine();
+                sb.AppendLine($"Total Phones {TotalPhones}");
+                sb.AppendLine($"Remaining Distance from Top: {remainingSpace[2]}");
+                sb.AppendLine();
+                return sb.ToString();
+            }
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BestFit
+namespace BestFit.Model
 {
-    internal class Rectangle
+    public class Rectangle
     {
         public readonly double Width, Length;
 
@@ -38,18 +38,17 @@ namespace BestFit
             return !other.IsWider(Width) && !other.IsLonger(Length);
         }
 
-        public IEnumerable<Rectangle> Fill(Rectangle outerRectangle, Action<string> log = null)
+        public IEnumerable<Rectangle> Fill(Rectangle outerRectangle)
         {
             var bestFit = BestFit(outerRectangle, outerRectangle.Rotate());
             if (bestFit.Value.CanFitIn(bestFit.Key))
             {
                 int fits = (int)Math.Floor(bestFit.Key.Width / bestFit.Value.Width);
-                log?.Invoke($"Fitted {fits} {bestFit.Value} into {bestFit.Key}");
                 for (int i = 0; i < fits; i++) yield return bestFit.Value;
                 Rectangle above = new Rectangle(bestFit.Key.Width, bestFit.Key.Length - bestFit.Value.Length);
                 Rectangle beside = new Rectangle(bestFit.Key.Width - (fits * bestFit.Value.Width), bestFit.Value.Length);
-                foreach (var fit in Fill(above, log)) yield return fit;
-                foreach (var fit in Fill(beside, log)) yield return fit;
+                foreach (var fit in Fill(above)) yield return fit;
+                foreach (var fit in Fill(beside)) yield return fit;
             }
         }
 

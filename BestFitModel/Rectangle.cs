@@ -38,17 +38,24 @@ namespace BestFit.Model
             return !other.IsWider(Width) && !other.IsLonger(Length);
         }
 
-        public IEnumerable<Rectangle> Fill(Rectangle outerRectangle)
+        public IEnumerable<FittedRectangle> Fill(Rectangle outerRectangle)
         {
             var bestFit = BestFit(outerRectangle, outerRectangle.Rotate());
             if (bestFit.Value.CanFitIn(bestFit.Key))
             {
                 int fits = (int)Math.Floor(bestFit.Key.Width / bestFit.Value.Width);
-                for (int i = 0; i < fits; i++) yield return bestFit.Value;
-                Rectangle above = new Rectangle(bestFit.Key.Width, bestFit.Key.Length - bestFit.Value.Length);
-                Rectangle beside = new Rectangle(bestFit.Key.Width - (fits * bestFit.Value.Width), bestFit.Value.Length);
-                foreach (var fit in Fill(above)) yield return fit;
-                foreach (var fit in Fill(beside)) yield return fit;
+                var vertical = bestFit.Key != outerRectangle;
+                for (int i = 0; i < fits; i++)
+                {
+                    var x = vertical ? 0 : i * bestFit.Value.Width;
+                    var y = vertical ? i * bestFit.Value.Width : 0;
+                    var rect = vertical ? bestFit.Value.Rotate() : bestFit.Value;
+                    yield return new FittedRectangle(rect, x, y);
+                }
+                Rectangle above = new Rectangle(outerRectangle.Width, outerRectangle.Length - (vertical ? bestFit.Value.Width * fits : bestFit.Value.Length));
+                Rectangle beside = new Rectangle(outerRectangle.Width - ( vertical ? bestFit.Value.Length : fits * bestFit.Value.Width), outerRectangle.Length);
+                foreach (var fit in Fill(above)) yield return vertical ? fit.Offset(bestFit.Value.Width * fits, 0) : fit.Offset(0, bestFit.Value.Length);
+                foreach (var fit in Fill(beside)) yield return vertical ? fit.Offset(bestFit.Value.Length, 0) : fit.Offset(bestFit.Value.Width * fits, 0);
             }
         }
 

@@ -10,27 +10,33 @@ namespace BestFit
     {
         static void Main(string[] args)
         {
-            while (true)
-            {
-                Console.Clear();
-                double[] phoneSize;
-                double[] boxSize;
+            var phone = new Rectangle(3, 2);
+            var box = new Rectangle(6, 7);
+            foreach (var fit in phone.Fill(box))
+                Console.WriteLine(fit);
+            Console.ReadKey();
 
-                try
-                {
-                    phoneSize = CaptureDimensions("Phone Size?");
-                    boxSize = CaptureDimensions("Box Size?");
-                    if (phoneSize.Length != 3 || boxSize.Length != 3)
-                        throw new FormatException("Wrong Dimensions!");
-                }
-                catch (FormatException ex)
-                {
-                    DisplayInvalidFormatMessage();
-                    continue;
-                }
+            //while (true)
+            //{
+            //    Console.Clear();
+            //    double[] phoneSize;
+            //    double[] boxSize;
 
-                DisplayBestFits(phoneSize, boxSize);
-            }
+            //    try
+            //    {
+            //        phoneSize = CaptureDimensions("Phone Size?");
+            //        boxSize = CaptureDimensions("Box Size?");
+            //        if (phoneSize.Length != 3 || boxSize.Length != 3)
+            //            throw new FormatException("Wrong Dimensions!");
+            //    }
+            //    catch (FormatException ex)
+            //    {
+            //        DisplayInvalidFormatMessage();
+            //        continue;
+            //    }
+
+            //    DisplayBestFits(phoneSize, boxSize);
+            //}
         }
 
         private static double[] CaptureDimensions(string prompt)
@@ -90,14 +96,14 @@ namespace BestFit
         public class FitResults
         {
             private readonly double[] _phone, _space;
-            private readonly IEnumerable<Rectangle> _results;
+            private readonly IEnumerable<FittedRectangle> _results;
 
             public int TotalPhones { get { return LayerCount * PhonesInLayer; } }
             public int PhonesInLayer { get { return _results.Count(); } }
             public int LayerCount { get { return (int)Math.Floor(_space[2] / _phone[0]); } }
             public double[] RemainingSpace { get { return new double[] { _space[0], _space[1], _space[2] - (LayerCount * _phone[0]) }; } }
 
-            public FitResults(double[] phone, double[] space, IEnumerable<Rectangle> results)
+            public FitResults(double[] phone, double[] space, IEnumerable<FittedRectangle> results)
             {
                 _phone = phone;
                 _space = space;

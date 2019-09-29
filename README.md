@@ -5,7 +5,11 @@ Console Application that determines the maximum amount of phones that can be pla
 
 Given a box and a unlimited supply of a smaller phone box, what is the maximum amount of phone boxes we can place without exceeding the bounds of the container box? You are allowed to rotate the boxes however you wish!
 
-## Usage
+## Best Fit on Android
+
+Install the VBF.apk package found in the Visual Best Fit directory, then install onto your phone via adb. You may need to enable developer options in order to install unsigned apks.
+
+## Best Fit in Console
 
 Follow the prompts to specify target sizes for the two boxes, the application will then determine a set of phones to use in order to pack it as much as it can.
 
